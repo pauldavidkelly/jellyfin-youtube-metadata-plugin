@@ -5,9 +5,9 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 using MediaBrowser.Controller.Entities.Movies;
+using System.Text.Json;
 
 namespace Jellyfin.Plugin.YoutubeMetadata.Providers
 {
@@ -26,14 +26,12 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
     public class YoutubeLocalProvider : ILocalMetadataProvider<Movie>, IHasItemChangeMonitor
     {
         private readonly ILogger<YoutubeLocalProvider> _logger;
-        private readonly IJsonSerializer _json;
         private readonly IFileSystem _fileSystem;
 
-        public YoutubeLocalProvider(IFileSystem fileSystem, IJsonSerializer json, ILogger<YoutubeLocalProvider> logger)
+        public YoutubeLocalProvider(IFileSystem fileSystem, ILogger<YoutubeLocalProvider> logger)
         {
             _fileSystem = fileSystem;
             _logger = logger;
-            _json = json;
         }
 
         public string Name => "YouTube Metadata";
@@ -94,7 +92,7 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
             var movie = movieResult.Item;
 
             cancellationToken.ThrowIfCancellationRequested();
-            return _json.DeserializeFromFile<MovieJson>(metaFile);
+            return JsonSerializer.Deserialize<MovieJson>(File.ReadAllText(metaFile));
         }
     }
 }

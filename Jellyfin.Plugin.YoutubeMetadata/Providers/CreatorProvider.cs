@@ -13,10 +13,10 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Serialization;
 
 using Google.Apis.Services;
 using Google.Apis.YouTube.v3;
+using System.Text.Json;
 
 namespace Jellyfin.Plugin.YoutubeMetadata.Providers
 {
@@ -25,14 +25,12 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IJsonSerializer _json;
-
-        public CreatorProviderImageProvider(IServerConfigurationManager config, IFileSystem fileSystem, IHttpClientFactory httpClientFactory, IJsonSerializer json)
+       
+        public CreatorProviderImageProvider(IServerConfigurationManager config, IFileSystem fileSystem, IHttpClientFactory httpClientFactory)
         {
             _config = config;
             _fileSystem = fileSystem;
             _httpClientFactory = httpClientFactory;
-            _json = json;
         }
 
         public bool Supports(BaseItem item)
@@ -57,9 +55,8 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
             {
                 await EnsureInfo(channelId, cancellationToken).ConfigureAwait(false);
 
-                var path = YoutubeMetadataProvider.GetVideoInfoPath(_config.ApplicationPaths, channelId);
-
-                var channel = _json.DeserializeFromFile<Google.Apis.YouTube.v3.Data.Channel>(path);
+                string jsonString = File.ReadAllText(YoutubeMetadataProvider.GetVideoInfoPath(_config.ApplicationPaths, channelId));
+                var channel = JsonSerializer.Deserialize<Google.Apis.YouTube.v3.Data.Video>(jsonString);
                 if (channel != null)
                 {
                     var rii = new RemoteImageInfo();
@@ -125,8 +122,8 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
             var response = await vreq.ExecuteAsync();
             var path = YoutubeMetadataProvider.GetVideoInfoPath(_config.ApplicationPaths, channelId);
             Directory.CreateDirectory(Path.GetDirectoryName(path));
-            var foo = response.Items[0];
-            _json.SerializeToFile(foo, path);
+            string jsonString = JsonSerializer.Serialize(response.Items[0]);
+            File.WriteAllText(path, jsonString);
         }
         public async Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {

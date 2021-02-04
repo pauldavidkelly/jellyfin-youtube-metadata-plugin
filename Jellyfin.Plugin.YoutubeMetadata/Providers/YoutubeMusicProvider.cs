@@ -10,9 +10,10 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 using MediaBrowser.Controller.Entities;
+using System.IO;
+using System.Text.Json;
 
 namespace Jellyfin.Plugin.YoutubeMetadata.Providers
 {
@@ -21,7 +22,6 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IJsonSerializer _json;
         private readonly ILogger<YoutubeMusicProvider> _logger;
         private readonly ILibraryManager _libmanager;
 
@@ -30,12 +30,11 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
         public const string BaseUrl = "https://m.youtube.com/";
         public const string YTID_RE = @"(?<=\[)[a-zA-Z0-9\-_]{11}(?=\])";
 
-        public YoutubeMusicProvider(IServerConfigurationManager config, IFileSystem fileSystem, IHttpClientFactory httpClientFactory, IJsonSerializer json, ILogger<YoutubeMusicProvider> logger, ILibraryManager libmanager)
+        public YoutubeMusicProvider(IServerConfigurationManager config, IFileSystem fileSystem, IHttpClientFactory httpClientFactory, ILogger<YoutubeMusicProvider> logger, ILibraryManager libmanager)
         {
             _config = config;
             _fileSystem = fileSystem;
             _httpClientFactory = httpClientFactory;
-            _json = json;
             _logger = logger;
             _libmanager = libmanager;
         }
@@ -57,9 +56,8 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
             {
                 await YoutubeMetadataProvider.Current.EnsureInfo(id, cancellationToken).ConfigureAwait(false);
 
-                var path = YoutubeMetadataProvider.GetVideoInfoPath(_config.ApplicationPaths, id);
-
-                var video = _json.DeserializeFromFile<Google.Apis.YouTube.v3.Data.Video>(path);
+                string jsonString = File.ReadAllText(YoutubeMetadataProvider.GetVideoInfoPath(_config.ApplicationPaths, id));
+                var video = JsonSerializer.Deserialize<Google.Apis.YouTube.v3.Data.Video>(jsonString);
                 if (video != null)
                 {
                     result.Item = new MusicVideo();

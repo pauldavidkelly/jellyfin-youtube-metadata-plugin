@@ -18,7 +18,11 @@
 		<PackageReference Include="Google.Apis.Auth" Version="1.45.0" />
 		<PackageReference Include="Google.Apis.Core" Version="1.45.0" />
 		<PackageReference Include="Google.Apis.YouTube.v3" Version="1.45.0.1905" />
-		<PackageReference Include="Jellyfin.Controller" Version="10.7.0-rc1" />
+		<PackageReference Include="Jellyfin.Controller" Version="10.7.0-rc3" />
           <PackageReference Include="Microsoft.Extensions.Http" Version="5.0.0" />
 	</ItemGroup>
+
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
+	  <Exec Command="if not exist &quot;C:\Users\paul\AppData\Local\jellyfin\plugins\YoutubeMetadata\&quot; mkdir &quot;C:\Users\paul\AppData\Local\jellyfin\plugins\YoutubeMetadata\&quot;&#xD;&#xA;copy /Y &quot;$(TargetDir)$(TargetName).dll&quot; &quot;C:\Users\paul\AppData\Local\jellyfin\plugins\YoutubeMetadata\$(TargetName).dll&quot;&#xD;&#xA;copy /Y &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;C:\Users\paul\AppData\Local\jellyfin\plugins\YoutubeMetadata\$(TargetName).pdb&quot;" />
+	</Target>
 </Project>

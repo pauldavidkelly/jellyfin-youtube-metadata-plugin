@@ -9,8 +9,9 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
+using System.IO;
+using System.Text.Json;
 
 namespace Jellyfin.Plugin.YoutubeMetadata.Providers
 {
@@ -18,15 +19,13 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
     {
         private readonly IServerConfigurationManager _config;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IJsonSerializer _json;
         private readonly ILogger<YoutubeMetadataImageProvider> _logger;
         public static YoutubeMetadataProvider Current;
 
-        public YoutubeMetadataImageProvider(IServerConfigurationManager config, IHttpClientFactory httpClientFactory, IJsonSerializer json, ILogger<YoutubeMetadataImageProvider> logger)
+        public YoutubeMetadataImageProvider(IServerConfigurationManager config, IHttpClientFactory httpClientFactory, ILogger<YoutubeMetadataImageProvider> logger)
         {
             _config = config;
             _httpClientFactory = httpClientFactory;
-            _json = json;
             _logger = logger;
         }
 
@@ -56,10 +55,8 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
             {
                 await YoutubeMetadataProvider.Current.EnsureInfo(id, cancellationToken).ConfigureAwait(false);
 
-                var path = YoutubeMetadataProvider.GetVideoInfoPath(_config.ApplicationPaths, id);
-
-                var obj = _json.DeserializeFromFile<Google.Apis.YouTube.v3.Data.Video>(path);
-
+                string jsonString = File.ReadAllText(YoutubeMetadataProvider.GetVideoInfoPath(_config.ApplicationPaths, id));
+                var obj = JsonSerializer.Deserialize<Google.Apis.YouTube.v3.Data.Video>(jsonString);
                 if (obj != null)
                 {
                     var tnurls = new List<string>();

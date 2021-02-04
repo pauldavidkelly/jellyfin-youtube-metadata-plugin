@@ -6,6 +6,8 @@ using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -14,7 +16,6 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -29,7 +30,6 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IJsonSerializer _json;
         private readonly ILogger<YoutubeMetadataProvider> _logger;
         private readonly ILibraryManager _libmanager;
 
@@ -38,12 +38,11 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
         public const string BaseUrl = "https://m.youtube.com/";
         public const string YTID_RE = @"(?<=\[)[a-zA-Z0-9\-_]{11}(?=\])";
 
-        public YoutubeMetadataProvider(IServerConfigurationManager config, IFileSystem fileSystem, IHttpClientFactory httpClientFactory, IJsonSerializer json, ILogger<YoutubeMetadataProvider> logger, ILibraryManager libmanager)
+        public YoutubeMetadataProvider(IServerConfigurationManager config, IFileSystem fileSystem, IHttpClientFactory httpClientFactory, ILogger<YoutubeMetadataProvider> logger, ILibraryManager libmanager)
         {
             _config = config;
             _fileSystem = fileSystem;
             _httpClientFactory = httpClientFactory;
-            _json = json;
             _logger = logger;
             _libmanager = libmanager;
             Current = this;
@@ -88,10 +87,9 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
             if (!string.IsNullOrWhiteSpace(id))
             {
                 await EnsureInfo(id, cancellationToken).ConfigureAwait(false);
-
-                var path = GetVideoInfoPath(_config.ApplicationPaths, id);
-
-                var video = _json.DeserializeFromFile<Google.Apis.YouTube.v3.Data.Video>(path);
+                string jsonString = File.ReadAllText(GetVideoInfoPath(_config.ApplicationPaths, id));
+                var video = JsonSerializer.Deserialize<Google.Apis.YouTube.v3.Data.Video>(jsonString);
+                /// var video = _json.DeserializeFromFile<Google.Apis.YouTube.v3.Data.Video>(path);
                 if (video != null)
                 {
                     result.Item = new Movie();
@@ -183,8 +181,8 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
             var response = await vreq.ExecuteAsync();
             var path = GetVideoInfoPath(_config.ApplicationPaths, youtubeId);
             Directory.CreateDirectory(Path.GetDirectoryName(path));
-            var foo = response.Items[0];
-            _json.SerializeToFile(foo, path);
+            string jsonString = JsonSerializer.Serialize(response.Items[0]);
+            File.WriteAllText(path, jsonString);
         }
 
         /// <summary>
