@@ -15,14 +15,14 @@ using System.Text.Json;
 
 namespace Jellyfin.Plugin.YoutubeMetadata.Providers
 {
-    public class YoutubeMetadataImageProvider : IRemoteImageProvider, IHasOrder
+    public class YoutubeEpisodeImageProvider : IRemoteImageProvider, IHasOrder
     {
         private readonly IServerConfigurationManager _config;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly ILogger<YoutubeMetadataImageProvider> _logger;
-        public static YoutubeMetadataProvider Current;
+        private readonly ILogger<YoutubeEpisodeImageProvider> _logger;
+        public static YoutubeEpisodeProvider Current;
 
-        public YoutubeMetadataImageProvider(IServerConfigurationManager config, IHttpClientFactory httpClientFactory, ILogger<YoutubeMetadataImageProvider> logger)
+        public YoutubeEpisodeImageProvider(IServerConfigurationManager config, IHttpClientFactory httpClientFactory, ILogger<YoutubeEpisodeImageProvider> logger)
         {
             _config = config;
             _httpClientFactory = httpClientFactory;
@@ -49,13 +49,13 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
         /// <inheritdoc />
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
-            var id = YoutubeMetadataProvider.Current.GetYTID(item.FileNameWithoutExtension);
+            var id = YoutubeEpisodeProvider.Current.GetYTID(item.FileNameWithoutExtension);
 
             if (!string.IsNullOrWhiteSpace(id))
             {
-                await YoutubeMetadataProvider.Current.EnsureInfo(id, cancellationToken).ConfigureAwait(false);
+                await YoutubeEpisodeProvider.Current.EnsureInfo(id, cancellationToken).ConfigureAwait(false);
 
-                string jsonString = File.ReadAllText(YoutubeMetadataProvider.GetVideoInfoPath(_config.ApplicationPaths, id));
+                string jsonString = File.ReadAllText(YoutubeEpisodeProvider.GetVideoInfoPath(_config.ApplicationPaths, id));
                 var obj = JsonSerializer.Deserialize<Google.Apis.YouTube.v3.Data.Video>(jsonString);
                 if (obj != null)
                 {

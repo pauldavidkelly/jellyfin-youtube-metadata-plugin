@@ -25,7 +25,7 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
         private readonly ILogger<YoutubeMusicProvider> _logger;
         private readonly ILibraryManager _libmanager;
 
-        public static YoutubeMetadataProvider Current;
+        public static YoutubeEpisodeProvider Current;
 
         public const string BaseUrl = "https://m.youtube.com/";
         public const string YTID_RE = @"(?<=\[)[a-zA-Z0-9\-_]{11}(?=\])";
@@ -48,23 +48,23 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
         public async Task<MetadataResult<MusicVideo>> GetMetadata(MusicVideoInfo info, CancellationToken cancellationToken)
         {
             var result = new MetadataResult<MusicVideo>();
-            var id = YoutubeMetadataProvider.Current.GetYTID(info.Name);
+            var id = YoutubeEpisodeProvider.Current.GetYTID(info.Name);
 
             _logger.LogInformation(id);
 
             if (!string.IsNullOrWhiteSpace(id))
             {
-                await YoutubeMetadataProvider.Current.EnsureInfo(id, cancellationToken).ConfigureAwait(false);
+                await YoutubeEpisodeProvider.Current.EnsureInfo(id, cancellationToken).ConfigureAwait(false);
 
-                string jsonString = File.ReadAllText(YoutubeMetadataProvider.GetVideoInfoPath(_config.ApplicationPaths, id));
+                string jsonString = File.ReadAllText(YoutubeEpisodeProvider.GetVideoInfoPath(_config.ApplicationPaths, id));
                 var video = JsonSerializer.Deserialize<Google.Apis.YouTube.v3.Data.Video>(jsonString);
                 if (video != null)
                 {
                     result.Item = new MusicVideo();
                     result.HasMetadata = true;
                     result.Item.OriginalTitle = info.Name;
-                    YoutubeMetadataProvider.Current.ProcessResult(result.Item, video);
-                    result.AddPerson(YoutubeMetadataProvider.CreatePerson(video.Snippet.ChannelTitle, video.Snippet.ChannelId));
+                    YoutubeEpisodeProvider.Current.ProcessResult(result.Item, video);
+                    result.AddPerson(YoutubeEpisodeProvider.CreatePerson(video.Snippet.ChannelTitle, video.Snippet.ChannelId));
                 }
             }
             else

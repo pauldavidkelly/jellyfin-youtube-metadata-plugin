@@ -18,27 +18,27 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
 using Microsoft.Extensions.Logging;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
 
 using Google.Apis.Services;
 using Google.Apis.YouTube.v3;
+using MediaBrowser.Controller.Entities.TV;
 
 namespace Jellyfin.Plugin.YoutubeMetadata.Providers
 {
-    public class YoutubeMetadataProvider : IRemoteMetadataProvider<Movie, MovieInfo>, IHasOrder
+    public class YoutubeEpisodeProvider : IRemoteMetadataProvider<Episode, EpisodeInfo>, IHasOrder
     {
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly ILogger<YoutubeMetadataProvider> _logger;
+        private readonly ILogger<YoutubeEpisodeProvider> _logger;
         private readonly ILibraryManager _libmanager;
 
-        public static YoutubeMetadataProvider Current;
+        public static YoutubeEpisodeProvider Current;
 
         public const string BaseUrl = "https://m.youtube.com/";
         public const string YTID_RE = @"(?<=\[)[a-zA-Z0-9\-_]{11}(?=\])";
 
-        public YoutubeMetadataProvider(IServerConfigurationManager config, IFileSystem fileSystem, IHttpClientFactory httpClientFactory, ILogger<YoutubeMetadataProvider> logger, ILibraryManager libmanager)
+        public YoutubeEpisodeProvider(IServerConfigurationManager config, IFileSystem fileSystem, IHttpClientFactory httpClientFactory, ILogger<YoutubeEpisodeProvider> logger, ILibraryManager libmanager)
         {
             _config = config;
             _fileSystem = fileSystem;
@@ -55,7 +55,7 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
         public int Order => 1;
 
         /// <inheritdoc />
-        public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(MovieInfo searchInfo, CancellationToken cancellationToken)
+        public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(EpisodeInfo searchInfo, CancellationToken cancellationToken)
             => Task.FromResult(Enumerable.Empty<RemoteSearchResult>());
 
         private string GetPathByTitle(string title)
@@ -77,9 +77,9 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
         }
 
         /// <inheritdoc />
-        public async Task<MetadataResult<Movie>> GetMetadata(MovieInfo info, CancellationToken cancellationToken)
+        public async Task<MetadataResult<Episode>> GetMetadata(EpisodeInfo info, CancellationToken cancellationToken)
         {
-            var result = new MetadataResult<Movie>();
+            var result = new MetadataResult<Episode>();
             var id = GetYTID(GetPathByTitle(info.Name));
 
             _logger.LogInformation(id);
@@ -92,7 +92,7 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
                 /// var video = _json.DeserializeFromFile<Google.Apis.YouTube.v3.Data.Video>(path);
                 if (video != null)
                 {
-                    result.Item = new Movie();
+                    result.Item = new Episode();
                     result.HasMetadata = true;
                     result.Item.OriginalTitle = info.Name;
                     ProcessResult(result.Item, video);
@@ -227,5 +227,6 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
         {
             throw new NotImplementedException();
         }
+              
     }
 }

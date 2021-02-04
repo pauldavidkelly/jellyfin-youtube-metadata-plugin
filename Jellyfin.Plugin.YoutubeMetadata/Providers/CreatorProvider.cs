@@ -55,7 +55,7 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
             {
                 await EnsureInfo(channelId, cancellationToken).ConfigureAwait(false);
 
-                string jsonString = File.ReadAllText(YoutubeMetadataProvider.GetVideoInfoPath(_config.ApplicationPaths, channelId));
+                string jsonString = File.ReadAllText(YoutubeEpisodeProvider.GetVideoInfoPath(_config.ApplicationPaths, channelId));
                 var channel = JsonSerializer.Deserialize<Google.Apis.YouTube.v3.Data.Video>(jsonString);
                 if (channel != null)
                 {
@@ -89,7 +89,7 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
         }
         internal Task EnsureInfo(string channelId, CancellationToken cancellationToken)
         {
-            var ytPath = YoutubeMetadataProvider.GetVideoInfoPath(_config.ApplicationPaths, channelId);
+            var ytPath = YoutubeEpisodeProvider.GetVideoInfoPath(_config.ApplicationPaths, channelId);
 
             var fileInfo = _fileSystem.GetFileSystemInfo(ytPath);
 
@@ -120,7 +120,7 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
             var vreq = youtubeService.Channels.List("snippet");
             vreq.Id = channelId;
             var response = await vreq.ExecuteAsync();
-            var path = YoutubeMetadataProvider.GetVideoInfoPath(_config.ApplicationPaths, channelId);
+            var path = YoutubeEpisodeProvider.GetVideoInfoPath(_config.ApplicationPaths, channelId);
             Directory.CreateDirectory(Path.GetDirectoryName(path));
             string jsonString = JsonSerializer.Serialize(response.Items[0]);
             File.WriteAllText(path, jsonString);
