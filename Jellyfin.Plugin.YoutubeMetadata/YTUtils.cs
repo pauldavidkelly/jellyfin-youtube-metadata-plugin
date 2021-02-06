@@ -17,7 +17,7 @@ namespace Jellyfin.Plugin.YoutubeMetadata.YTTools
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public string GetYTID(string name)
+        public static string GetYTID(string name)
         {
             var match = Regex.Match(name, YTID_RE);
             return match.Value;

@@ -11,10 +11,10 @@ using System.Threading.Tasks;
 
 namespace Jellyfin.Plugin.YoutubeMetadata.Providers
 {
-    public class YoutubeSeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>
+    public class YoutubeSeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>, IHasOrder
     {
-        public string Name => throw new NotImplementedException();
-
+        public string Name => "Youtube Metadata";
+        public int Order => 1;
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();

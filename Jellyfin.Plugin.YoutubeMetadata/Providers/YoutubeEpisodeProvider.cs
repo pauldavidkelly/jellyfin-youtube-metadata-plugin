@@ -22,6 +22,7 @@ using MediaBrowser.Controller.Entities;
 using Google.Apis.Services;
 using Google.Apis.YouTube.v3;
 using MediaBrowser.Controller.Entities.TV;
+using Jellyfin.Plugin.YoutubeMetadata.YTTools;
 
 namespace Jellyfin.Plugin.YoutubeMetadata.Providers
 {
@@ -32,11 +33,10 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<YoutubeEpisodeProvider> _logger;
         private readonly ILibraryManager _libmanager;
-
+        
         public static YoutubeEpisodeProvider Current;
 
-        public const string BaseUrl = "https://m.youtube.com/";
-        public const string YTID_RE = @"(?<=\[)[a-zA-Z0-9\-_]{11}(?=\])";
+        
 
         public YoutubeEpisodeProvider(IServerConfigurationManager config, IFileSystem fileSystem, IHttpClientFactory httpClientFactory, ILogger<YoutubeEpisodeProvider> logger, ILibraryManager libmanager)
         {
@@ -65,22 +65,13 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
             return results.Items[0].Path;
         }
 
-        /// <summary>
-        ///  Returns the Youtube ID from the file path. Matches last 11 character field inside square brackets.
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        internal string GetYTID(string name)
-        {
-            var match = Regex.Match(name, YTID_RE);
-            return match.Value;
-        }
+        
 
         /// <inheritdoc />
         public async Task<MetadataResult<Episode>> GetMetadata(EpisodeInfo info, CancellationToken cancellationToken)
         {
             var result = new MetadataResult<Episode>();
-            var id = GetYTID(GetPathByTitle(info.Name));
+            var id = YTUtils.GetYTID(GetPathByTitle(info.Name));
 
             _logger.LogInformation(id);
 

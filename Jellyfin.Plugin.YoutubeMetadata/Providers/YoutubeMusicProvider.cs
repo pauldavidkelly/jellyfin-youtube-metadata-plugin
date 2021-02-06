@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using MediaBrowser.Controller.Entities;
 using System.IO;
 using System.Text.Json;
+using Jellyfin.Plugin.YoutubeMetadata.YTTools;
 
 namespace Jellyfin.Plugin.YoutubeMetadata.Providers
 {
@@ -24,7 +25,7 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<YoutubeMusicProvider> _logger;
         private readonly ILibraryManager _libmanager;
-
+        
         public static YoutubeEpisodeProvider Current;
 
         public const string BaseUrl = "https://m.youtube.com/";
@@ -48,7 +49,7 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
         public async Task<MetadataResult<MusicVideo>> GetMetadata(MusicVideoInfo info, CancellationToken cancellationToken)
         {
             var result = new MetadataResult<MusicVideo>();
-            var id = YoutubeEpisodeProvider.Current.GetYTID(info.Name);
+            var id = YTUtils.GetYTID(info.Name);
 
             _logger.LogInformation(id);
 

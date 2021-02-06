@@ -12,6 +12,7 @@ using MediaBrowser.Model.Providers;
 using Microsoft.Extensions.Logging;
 using System.IO;
 using System.Text.Json;
+using Jellyfin.Plugin.YoutubeMetadata.YTTools;
 
 namespace Jellyfin.Plugin.YoutubeMetadata.Providers
 {
@@ -21,6 +22,7 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<YoutubeEpisodeImageProvider> _logger;
         public static YoutubeEpisodeProvider Current;
+        
 
         public YoutubeEpisodeImageProvider(IServerConfigurationManager config, IHttpClientFactory httpClientFactory, ILogger<YoutubeEpisodeImageProvider> logger)
         {
@@ -49,7 +51,7 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
         /// <inheritdoc />
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
-            var id = YoutubeEpisodeProvider.Current.GetYTID(item.FileNameWithoutExtension);
+            var id = YTUtils.GetYTID(item.FileNameWithoutExtension);
 
             if (!string.IsNullOrWhiteSpace(id))
             {
