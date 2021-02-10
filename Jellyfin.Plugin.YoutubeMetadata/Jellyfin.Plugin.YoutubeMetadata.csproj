@@ -2,10 +2,15 @@
 	<PropertyGroup>
 		<TargetFramework>net5.0</TargetFramework>
 		<RootNamespace>Jellyfin.Plugin.YoutubeMetadata</RootNamespace>
-		<AssemblyVersion>1.0.3.2</AssemblyVersion>
-		<FileVersion>1.0.3.2</FileVersion>
-		<Version>1.0.3.2</Version>
+		<AssemblyVersion>1.1.0.0</AssemblyVersion>
+		<FileVersion>1.1.0.0</FileVersion>
+		<Version>1.1.0.0</Version>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 	</PropertyGroup>
+	<ItemGroup>
+	  <Compile Remove="Providers\YoutubeSeasonImageProvider.cs" />
+	  <Compile Remove="Providers\YoutubeSeasonProvider.cs" />
+	</ItemGroup>
 	<ItemGroup>
 		<None Remove="Configuration\configPage.html" />
 	</ItemGroup>
@@ -23,6 +28,6 @@
 	</ItemGroup>
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
-	  <Exec Command="if not exist &quot;C:\Users\paul\AppData\Local\jellyfin\plugins\YoutubeMetadata\&quot; mkdir &quot;C:\Users\paul\AppData\Local\jellyfin\plugins\YoutubeMetadata\&quot;&#xD;&#xA;copy /Y &quot;$(TargetDir)$(TargetName).dll&quot; &quot;C:\Users\paul\AppData\Local\jellyfin\plugins\YoutubeMetadata\$(TargetName).dll&quot;&#xD;&#xA;copy /Y &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;C:\Users\paul\AppData\Local\jellyfin\plugins\YoutubeMetadata\$(TargetName).pdb&quot;" />
+	  <Exec Command="if not exist &quot;C:\Users\paul\AppData\Local\jellyfin\plugins\YoutubeMetadata\&quot; mkdir &quot;C:\Users\paul\AppData\Local\jellyfin\plugins\YoutubeMetadata\&quot;&#xD;&#xA;copy /Y &quot;$(TargetDir)$(TargetName).dll&quot; &quot;C:\Users\paul\AppData\Local\jellyfin\plugins\YoutubeMetadata\$(TargetName).dll&quot;&#xD;&#xA;copy /Y &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;C:\Users\paul\AppData\Local\jellyfin\plugins\YoutubeMetadata\$(TargetName).pdb&quot;&#xD;&#xA;copy /Y &quot;$(TargetDir)*.dll&quot; &quot;C:\Users\paul\AppData\Local\jellyfin\plugins\YoutubeMetadata\*.dll&quot;" />
 	</Target>
 </Project>

@@ -10,8 +10,9 @@ namespace Jellyfin.Plugin.YoutubeMetadata.YTTools
     public static class YTUtils
     {
         public const string BaseUrl = "https://m.youtube.com/";
-        public const string YTID_RE = @"(?<=\[)[a-zA-Z0-9\-_]{11}(?=\])";
-
+        //public const string YTID_RE = @"(?<=\[)[a-zA-Z0-9\-_]{11}(?=\])";
+        // Simple Regex to capture everything between [] so it can be a channel, playlist or video
+        public const string YTID_RE = @"[^[\]]+(?=])";
         /// <summary>
         ///  Returns the Youtube ID from the file path. Matches last 11 character field inside square brackets.
         /// </summary>
@@ -19,8 +20,13 @@ namespace Jellyfin.Plugin.YoutubeMetadata.YTTools
         /// <returns></returns>
         public static string GetYTID(string name)
         {
-            var match = Regex.Match(name, YTID_RE);
-            return match.Value;
+            return Regex.Match(name, YTID_RE).Value;
+        }
+
+        public static bool IsChannel(string id)
+        {
+            if (id.StartsWith("UC")) return true;
+            return false;
         }
     }
 }
