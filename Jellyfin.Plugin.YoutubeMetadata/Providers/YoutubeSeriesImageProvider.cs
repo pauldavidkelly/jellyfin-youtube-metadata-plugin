@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
+using MediaBrowser.Controller.Entities.TV;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -23,6 +24,7 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
         private readonly IServerConfigurationManager _config;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<YoutubeSeriesImageProvider> _logger;
+        private bool _isChannel;
         public static YoutubeSeriesProvider Current;
 
         public YoutubeSeriesImageProvider(IServerConfigurationManager config, IHttpClientFactory httpClientFactory, ILogger<YoutubeSeriesImageProvider> logger)
@@ -30,6 +32,7 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
             _config = config;
             _httpClientFactory = httpClientFactory;
             _logger = logger;
+            _isChannel = false;
         }
         public string Name => "Youtube Metadata";
 
@@ -43,43 +46,91 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
             var id = YTUtils.GetYTID(item.FileNameWithoutExtension);
+            _isChannel = YTUtils.IsChannel(id);
 
             if (!string.IsNullOrWhiteSpace(id))
             {
                 await YoutubeSeriesProvider.Current.EnsureInfo(id, cancellationToken).ConfigureAwait(false);
 
                 string jsonString = File.ReadAllText(YoutubeSeriesProvider.GetVideoInfoPath(_config.ApplicationPaths, id));
-                var obj = JsonSerializer.Deserialize<Google.Apis.YouTube.v3.Data.Channel>(jsonString);
-                if (obj != null)
-                {
-                    var tnurls = new List<string>();
-                    if (obj.Snippet.Thumbnails.Maxres != null)
-                    {
-                        tnurls.Add(obj.Snippet.Thumbnails.Maxres.Url);
-                    }
-                    if (obj.Snippet.Thumbnails.Standard != null)
-                    {
-                        tnurls.Add(obj.Snippet.Thumbnails.Standard.Url);
-                    }
-                    if (obj.Snippet.Thumbnails.High != null)
-                    {
-                        tnurls.Add(obj.Snippet.Thumbnails.High.Url);
-                    }
-                    if (obj.Snippet.Thumbnails.Medium != null)
-                    {
-                        tnurls.Add(obj.Snippet.Thumbnails.Medium.Url);
-                    }
-                    if (obj.Snippet.Thumbnails.Default__.Url != null)
-                    {
-                        tnurls.Add(obj.Snippet.Thumbnails.Default__.Url);
-                    }
-
-                    return GetImages(tnurls);
-                }
+                if (_isChannel)
+                    return GetChannelImages(jsonString);
                 else
+                    return GetPlaylistImages(jsonString);
+            }
+
+            return new List<RemoteImageInfo>();
+        }
+
+        private IEnumerable<RemoteImageInfo> GetChannelImages(string jsonString)
+        {
+            var obj = JsonSerializer.Deserialize<Google.Apis.YouTube.v3.Data.Channel>(jsonString);
+            if (obj != null)
+            {
+                var tnurls = new List<string>();
+                if (obj.Snippet.Thumbnails.Maxres != null)
                 {
-                    _logger.LogInformation("Object is null!");
+                    tnurls.Add(obj.Snippet.Thumbnails.Maxres.Url);
                 }
+                if (obj.Snippet.Thumbnails.Standard != null)
+                {
+                    tnurls.Add(obj.Snippet.Thumbnails.Standard.Url);
+                }
+                if (obj.Snippet.Thumbnails.High != null)
+                {
+                    tnurls.Add(obj.Snippet.Thumbnails.High.Url);
+                }
+                if (obj.Snippet.Thumbnails.Medium != null)
+                {
+                    tnurls.Add(obj.Snippet.Thumbnails.Medium.Url);
+                }
+                if (obj.Snippet.Thumbnails.Default__.Url != null)
+                {
+                    tnurls.Add(obj.Snippet.Thumbnails.Default__.Url);
+                }
+
+                return GetImages(tnurls);
+            }
+            else
+            {
+                _logger.LogInformation("Object is null!");
+            }
+
+            return new List<RemoteImageInfo>();
+        }
+
+        private IEnumerable<RemoteImageInfo> GetPlaylistImages(string jsonString)
+        {
+            var obj = JsonSerializer.Deserialize<Google.Apis.YouTube.v3.Data.Playlist>(jsonString);
+            if (obj != null)
+            {
+                var tnurls = new List<string>();
+                if (obj.Snippet.Thumbnails.Maxres != null)
+                {
+                    tnurls.Add(obj.Snippet.Thumbnails.Maxres.Url);
+                }
+                if (obj.Snippet.Thumbnails.Standard != null)
+                {
+                    tnurls.Add(obj.Snippet.Thumbnails.Standard.Url);
+                }
+                if (obj.Snippet.Thumbnails.High != null)
+                {
+                    tnurls.Add(obj.Snippet.Thumbnails.High.Url);
+                }
+                if (obj.Snippet.Thumbnails.Medium != null)
+                {
+                    tnurls.Add(obj.Snippet.Thumbnails.Medium.Url);
+                }
+                if (obj.Snippet.Thumbnails.Default__.Url != null)
+                {
+                    tnurls.Add(obj.Snippet.Thumbnails.Default__.Url);
+                }
+
+                return GetImages(tnurls);
+            }
+            else
+            {
+                _logger.LogInformation("Object is null!");
             }
 
             return new List<RemoteImageInfo>();
@@ -114,6 +165,6 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
 
         /// <inheritdoc />
         public bool Supports(BaseItem item)
-            => item is Series;
+            => item is MediaBrowser.Controller.Entities.TV.Series;
     }
 }

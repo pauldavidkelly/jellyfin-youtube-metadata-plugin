@@ -8,8 +8,9 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 	</PropertyGroup>
 	<ItemGroup>
+	  <Compile Remove="Providers\YoutubeLocalImageProvider.cs" />
+	  <Compile Remove="Providers\YoutubeLocalProvider.cs" />
 	  <Compile Remove="Providers\YoutubeSeasonImageProvider.cs" />
-	  <Compile Remove="Providers\YoutubeSeasonProvider.cs" />
 	</ItemGroup>
 	<ItemGroup>
 		<None Remove="Configuration\configPage.html" />

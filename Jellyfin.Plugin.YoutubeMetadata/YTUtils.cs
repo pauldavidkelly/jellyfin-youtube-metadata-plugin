@@ -20,7 +20,7 @@ namespace Jellyfin.Plugin.YoutubeMetadata.YTTools
         /// <returns></returns>
         public static string GetYTID(string name)
         {
-            return Regex.Match(name, YTID_RE).Value;
+            return Regex.Match(name, YTID_RE, RegexOptions.RightToLeft).Value;
         }
 
         public static bool IsChannel(string id)
@@ -28,5 +28,6 @@ namespace Jellyfin.Plugin.YoutubeMetadata.YTTools
             if (id.StartsWith("UC")) return true;
             return false;
         }
+
     }
 }

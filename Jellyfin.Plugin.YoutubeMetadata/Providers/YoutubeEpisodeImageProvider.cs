@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using System.IO;
 using System.Text.Json;
 using Jellyfin.Plugin.YoutubeMetadata.YTTools;
+using MediaBrowser.Controller.Entities.TV;
 
 namespace Jellyfin.Plugin.YoutubeMetadata.Providers
 {
@@ -120,6 +121,6 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
 
         /// <inheritdoc />
         public bool Supports(BaseItem item)
-            => item is Movie;
+            => item is Episode;
     }
 }

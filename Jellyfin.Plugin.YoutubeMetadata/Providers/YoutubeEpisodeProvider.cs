@@ -62,7 +62,11 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
         {
             var query = new MediaBrowser.Controller.Entities.InternalItemsQuery { Name = title };
             var results = _libmanager.GetItemsResult(query);
-            return results.Items[0].Path;
+            if (results.TotalRecordCount > 1)
+            {
+                return results.Items[results.Items.Count - 1].FileNameWithoutExtension;
+            }
+            return results.Items[0].FileNameWithoutExtension;
         }
 
         
@@ -87,7 +91,7 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
                     result.HasMetadata = true;
                     result.Item.OriginalTitle = info.Name;
                     ProcessResult(result.Item, video);
-                    result.AddPerson(CreatePerson(video.Snippet.ChannelTitle, video.Snippet.ChannelId));
+                    result.AddPerson(CreatePerson(video.Snippet.Title, video.Id));
                 }
             }
             else

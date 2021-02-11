@@ -59,8 +59,12 @@ namespace Jellyfin.Plugin.YoutubeMetadata
 
         private string GetPathByTitle(string title)
         {
-            var query = new MediaBrowser.Controller.Entities.InternalItemsQuery { Name = title };
+            var query = new InternalItemsQuery { Name = title };
             var results = _libmanager.GetItemsResult(query);
+            if (results.TotalRecordCount > 1)
+            {
+                return results.Items[results.Items.Count - 1].Path;
+            }
             return results.Items[0].Path;
         }
 
@@ -180,7 +184,7 @@ namespace Jellyfin.Plugin.YoutubeMetadata
 
         internal async Task DownloadChannel(string youtubeId, YouTubeService youtubeService)
         {
-           var vreq = youtubeService.Channels.List("snippet");
+           var vreq = youtubeService.Channels.List("brandingSettings");
            vreq.Id = youtubeId;
            var response = await vreq.ExecuteAsync();
            var path = GetVideoInfoPath(_config.ApplicationPaths, youtubeId);

@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
+using MediaBrowser.Controller.Entities.TV;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -114,6 +115,6 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
 
         /// <inheritdoc />
         public bool Supports(BaseItem item)
-            => item is Season;
+            => item is MediaBrowser.Controller.Entities.TV.Season;
     }
 }

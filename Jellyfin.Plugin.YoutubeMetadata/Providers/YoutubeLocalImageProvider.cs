@@ -4,8 +4,8 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Controller.Entities.Movies;
 using Microsoft.Extensions.Logging;
+using MediaBrowser.Controller.Entities.TV;
 
 namespace Jellyfin.Plugin.YoutubeMetadata.Providers
 {
@@ -46,6 +46,6 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
             return list;
         }
         public bool Supports(BaseItem item)
-            => item is Movie;
+            => item is Episode;
     }
 }
