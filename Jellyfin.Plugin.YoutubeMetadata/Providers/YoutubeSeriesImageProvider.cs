@@ -53,10 +53,10 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
                 await YoutubeSeriesProvider.Current.EnsureInfo(id, cancellationToken).ConfigureAwait(false);
 
                 string jsonString = File.ReadAllText(YoutubeSeriesProvider.GetVideoInfoPath(_config.ApplicationPaths, id));
-                if (_isChannel)
+       //         if (_isChannel)
                     return GetChannelImages(jsonString);
-                else
-                    return GetPlaylistImages(jsonString);
+       //         else
+       //             return GetPlaylistImages(jsonString);
             }
 
             return new List<RemoteImageInfo>();
@@ -64,42 +64,45 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
 
         private IEnumerable<RemoteImageInfo> GetChannelImages(string jsonString)
         {
+            var images = new List<RemoteImageInfo>();
             var obj = JsonSerializer.Deserialize<Google.Apis.YouTube.v3.Data.Channel>(jsonString);
             if (obj != null)
             {
-                var tnurls = new List<string>();
+                if (obj.BrandingSettings.Image.BannerExternalUrl != null)
+                {
+                    images.Add(AddImages(obj.BrandingSettings.Image.BannerExternalUrl, ImageType.Backdrop));
+                }
                 if (obj.Snippet.Thumbnails.Maxres != null)
                 {
-                    tnurls.Add(obj.Snippet.Thumbnails.Maxres.Url);
+                    images.Add(AddImages(obj.Snippet.Thumbnails.Maxres.Url, ImageType.Primary));
                 }
                 if (obj.Snippet.Thumbnails.Standard != null)
                 {
-                    tnurls.Add(obj.Snippet.Thumbnails.Standard.Url);
+                    images.Add(AddImages(obj.Snippet.Thumbnails.Standard.Url, ImageType.Primary));
                 }
                 if (obj.Snippet.Thumbnails.High != null)
                 {
-                    tnurls.Add(obj.Snippet.Thumbnails.High.Url);
+                    images.Add(AddImages(obj.Snippet.Thumbnails.High.Url, ImageType.Primary));
                 }
                 if (obj.Snippet.Thumbnails.Medium != null)
                 {
-                    tnurls.Add(obj.Snippet.Thumbnails.Medium.Url);
+                    images.Add(AddImages(obj.Snippet.Thumbnails.Medium.Url, ImageType.Primary));
                 }
                 if (obj.Snippet.Thumbnails.Default__.Url != null)
                 {
-                    tnurls.Add(obj.Snippet.Thumbnails.Default__.Url);
+                    images.Add(AddImages(obj.Snippet.Thumbnails.Default__.Url, ImageType.Primary));
                 }
-
-                return GetImages(tnurls);
+         
             }
             else
             {
                 _logger.LogInformation("Object is null!");
             }
 
-            return new List<RemoteImageInfo>();
+            return images;
         }
 
-        private IEnumerable<RemoteImageInfo> GetPlaylistImages(string jsonString)
+     /*   private IEnumerable<RemoteImageInfo> GetPlaylistImages(string jsonString)
         {
             var obj = JsonSerializer.Deserialize<Google.Apis.YouTube.v3.Data.Playlist>(jsonString);
             if (obj != null)
@@ -135,23 +138,15 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
 
             return new List<RemoteImageInfo>();
         }
-
-        private IEnumerable<RemoteImageInfo> GetImages(IEnumerable<string> urls)
+     */
+        private RemoteImageInfo AddImages(string url, ImageType type)
         {
-            var list = new List<RemoteImageInfo>();
-            foreach (string url in urls)
+            return new RemoteImageInfo
             {
-                if (!string.IsNullOrWhiteSpace(url))
-                {
-                    list.Add(new RemoteImageInfo
-                    {
                         ProviderName = Name,
                         Url = url,
-                        Type = ImageType.Primary
-                    });
-                }
-            }
-            return list;
+                        Type = type
+            };    
         }
 
         public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
@@ -159,7 +154,8 @@ namespace Jellyfin.Plugin.YoutubeMetadata.Providers
             return new List<ImageType>
             {
                 ImageType.Primary,
-                ImageType.Disc
+                ImageType.Thumb,
+                ImageType.Backdrop
             };
         }
 

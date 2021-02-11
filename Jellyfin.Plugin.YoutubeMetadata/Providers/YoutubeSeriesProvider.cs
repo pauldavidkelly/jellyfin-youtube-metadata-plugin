@@ -150,8 +150,8 @@ namespace Jellyfin.Plugin.YoutubeMetadata
         /// <param name="preferredLanguage"></param>
         public void ProcessResult(Series item, Google.Apis.YouTube.v3.Data.Channel result)
         {
-            item.Name = result.Snippet.Title;
-            item.Overview = result.Snippet.Description;
+            item.Name = result.BrandingSettings.Channel.Title;
+            item.Overview = result.BrandingSettings.Channel.Description;
             var date = DateTime.Parse(result.Snippet.PublishedAtRaw);
             item.ProductionYear = date.Year;
             item.PremiereDate = date;
@@ -184,7 +184,7 @@ namespace Jellyfin.Plugin.YoutubeMetadata
 
         internal async Task DownloadChannel(string youtubeId, YouTubeService youtubeService)
         {
-           var vreq = youtubeService.Channels.List("brandingSettings");
+           var vreq = youtubeService.Channels.List("brandingSettings,contentDetails,snippet");
            vreq.Id = youtubeId;
            var response = await vreq.ExecuteAsync();
            var path = GetVideoInfoPath(_config.ApplicationPaths, youtubeId);
